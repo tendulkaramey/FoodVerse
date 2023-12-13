@@ -55,7 +55,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     outlet = models.ForeignKey(RestaurantOutlet, on_delete=models.CASCADE)
     user_address = models.ForeignKey(UserAddress, on_delete=models.CASCADE)
-    total = models.FloatField(None=False, blank=False)
+    total = models.FloatField(blank=False)
     items = models.JSONField(default=default_json)
     created_at = models.DateTimeField(default=now, editable=False)
 
@@ -63,7 +63,7 @@ class OrderItems(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Menu, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
-    price = models.FloatField(None=False, blank=False)
+    price = models.FloatField(blank=False)
     created_at = models.DateTimeField(default=now, editable=False)
 
 class ItemReview(models.Model):
