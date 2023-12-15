@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db.models import Count
 import random
 from datetime import datetime, timedelta
 from faker import Faker
@@ -32,33 +33,22 @@ class Command(BaseCommand):
     help = 'Command for Populating Users Table'
 
     def add_arguments(self, parser):
-        parser.add_argument("count", type=int, help='rows you want to populate')
+        parser.add_argument("address_limit", type=int, help='max address count for a user')
 
     def handle(self, *args, **options):
-        #users will be appended with already users
-        #get last user
-        count = options['count']
-        user = User.objects.all().order_by('-id')
-        if user.count():
-            last_user = user[0]
-            mobile_no = int(last_user.mobile)
-            new_id = last_user.id + 1
-        else:
-            #start populating from start
-            mobile_no = 1000000000
-            new_id = 1
-        user_bulk = []
-        for i in range(0, count):
-            if mobile_no >= 9999999999:
-                self.stdout.write(self.style.SUCCESS('Mobile Number Limit Reached'))
-                break
-            mobile_no = mobile_no + 1
-            email = 'user_'+str(new_id)+'@foodverse.in'
-            new_id += 1
-            user_temp = User(first_name=fake.first_name(), last_name=fake.last_name(), email=email, mobile=mobile_no, is_verified=True, is_activated=True)
-            user_bulk.append(user_temp)
+        #get all the  users who have address < address limit and then populate their addresses
+        address_limit = options['address_limit']
+        users_with_less_than_limit_addresses = User.objects.annotate(num_addresses=Count('useraddress')).filter(num_addresses__lt=address_limit)
 
-        User.objects.bulk_create(user_bulk)
+        address_bulk = []
+
+        for user in users_with_less_than_limit_addresses:
+            copies = address_limit - user.num_addresses
+            for _ in range(copies):
+                address = UserAddress(user=user, name=fake.name(), line1=fake.street_address(), line2=fake.secondary_address(), pincode=fake.zipcode())
+                address_bulk.append(address)
+
+        UserAddress.objects.bulk_create(address_bulk)
 
         self.stdout.write(self.style.SUCCESS('Successfully populated database.'))
 
