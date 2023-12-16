@@ -44,7 +44,7 @@ class Command(BaseCommand):
         for restaurant in restaurants_with_less_than_limit_outlets:
             ids.append(restaurant.id)
             copies = outlet_limit - restaurant.num_outlets
-            copies =  random.randint(0, copies)
+            copies =  random.randint(0, copies)#random to select from limit
             for _ in range(copies):
                 address={
                     "street": fake.street_address(),
