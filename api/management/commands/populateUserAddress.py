@@ -41,6 +41,7 @@ class Command(BaseCommand):
         users_with_less_than_limit_addresses = User.objects.annotate(num_addresses=Count('useraddress')).filter(num_addresses__lt=address_limit)
 
         address_bulk = []
+        users_with_less_than_limit_addresses = users_with_less_than_limit_addresses[:100000]
 
         for user in users_with_less_than_limit_addresses:
             copies = address_limit - user.num_addresses
